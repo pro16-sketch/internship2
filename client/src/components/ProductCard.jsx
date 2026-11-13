@@ -14,12 +14,16 @@ function ProductCard({ product, onView, onAdd }) {
 
         <h3>{product.name}</h3>
 
-        <p className="rating">★ {product.rating}</p>
+       <p className="rating">★ {product.rating ?? "N/A"}</p>
 
-        <div className="price">
-          ₹{product.price.toLocaleString("en-IN")}
-          <del>₹{product.oldPrice.toLocaleString("en-IN")}</del>
-        </div>
+<div className="price">
+  ₹{Number(product.price || 0).toLocaleString("en-IN")}
+  {product.oldPrice && (
+    <del>
+      ₹{Number(product.oldPrice).toLocaleString("en-IN")}
+    </del>
+  )}
+</div>
 
         <div className="product-actions">
           <button onClick={() => onView(product)}>

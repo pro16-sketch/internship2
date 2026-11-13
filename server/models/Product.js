@@ -23,6 +23,13 @@ const productSchema = new mongoose.Schema(
       type: Number,
       required: true,
     },
+    oldPrice: {
+  type: Number,
+},
+
+rating: {
+  type: Number,
+},
 
     category: {
       type: String,

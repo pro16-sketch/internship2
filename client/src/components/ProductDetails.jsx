@@ -27,16 +27,19 @@ function ProductDetails({ product, onBack, onAdd }) {
 
           <h1>{product.name}</h1>
 
-          <p className="details-rating">
-            ★ {product.rating} / 5
-          </p>
+         <p className="details-rating">
+  ★ {product.rating ?? "N/A"} / 5
+</p>
 
-          <div className="details-price">
-            ₹{product.price.toLocaleString("en-IN")}
-            <del>
-              ₹{product.oldPrice.toLocaleString("en-IN")}
-            </del>
-          </div>
+<div className="details-price">
+  ₹{Number(product.price || 0).toLocaleString("en-IN")}
+
+  {product.oldPrice && (
+    <del>
+      ₹{Number(product.oldPrice).toLocaleString("en-IN")}
+    </del>
+  )}
+</div>
 
           <p className="details-description">
             {product.description}
@@ -67,7 +70,7 @@ function ProductDetails({ product, onBack, onAdd }) {
           </div>
 
           <h3 className="details-total">
-            Total: ₹{(product.price * quantity).toLocaleString("en-IN")}
+           Total: ₹{(Number(product.price || 0) * quantity).toLocaleString("en-IN")}
           </h3>
 
           <button

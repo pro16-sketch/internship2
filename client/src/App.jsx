@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 
 import Navbar from "./components/Navbar";
 import ProductCard from "./components/ProductCard";
@@ -6,10 +6,14 @@ import ProductDetails from "./components/ProductDetails";
 import Cart from "./components/Cart";
 import AuthModal from "./components/AuthModal";
 
-import products from "./data/products";
+
 import "./App.css";
 
 function App() {
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [productError, setProductError] = useState("");
+
   const [cart, setCart] = useState([]);
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [showCart, setShowCart] = useState(false);
@@ -18,7 +22,27 @@ function App() {
 
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("All");
+  useEffect(() => {
+  async function fetchProducts() {
+    try {
+      const response = await fetch("http://localhost:5000/api/products");
 
+      if (!response.ok) {
+        throw new Error("Failed to fetch products");
+      }
+
+      const data = await response.json();
+      setProducts(data);
+    } catch (error) {
+      console.error("Product fetch error:", error);
+      setProductError("Unable to load products. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  fetchProducts();
+}, []);
   const categories = [
     "All",
     ...new Set(products.map(p => p.category))
@@ -40,24 +64,24 @@ function App() {
     0
   );
 
-  function addToCart(product) {
-    setCart(previous => {
-      const existing = previous.find(item => item.id === product.id);
+ function addToCart(product, quantity = 1) {
+  setCart(previous => {
+    const existing = previous.find(item => item.id === product.id);
 
-      if (existing) {
-        return previous.map(item =>
-          item.id === product.id
-            ? {...item, quantity: item.quantity + 1}
-            : item
-        );
-      }
+    if (existing) {
+      return previous.map(item =>
+        item.id === product.id
+          ? { ...item, quantity: item.quantity + quantity }
+          : item
+      );
+    }
 
-      return [...previous, {...product, quantity: 1}];
-    });
+    return [...previous, { ...product, quantity }];
+  });
 
-    setSelectedProduct(null);
-  }
-
+  setSelectedProduct(null);
+}
+   
   function updateQuantity(id, change) {
     setCart(previous =>
       previous
@@ -74,49 +98,60 @@ function App() {
     setCart(previous => previous.filter(item => item.id !== id));
   }
 
-  function checkout() {
-    if (!user) {
-      setShowCart(false);
-      setShowAuth(true);
-      alert("Please login before placing your order.");
-      return;
-    }
-
-    if (cart.length === 0) return;
-
-    const total = cart.reduce(
-      (sum, item) => sum + item.price * item.quantity,
-      0
-    );
-
-    const confirmed = window.confirm(
-      `Confirm your order of ₹${total.toLocaleString("en-IN")}?`
-    );
-
-    if (confirmed) {
-      const order = {
-        orderId: "ORD" + Date.now(),
-        customer: user.email,
-        items: cart,
-        total,
-        date: new Date().toISOString()
-      };
-
-      const existingOrders = JSON.parse(
-        localStorage.getItem("shopsphere_orders") || "[]"
-      );
-
-      localStorage.setItem(
-        "shopsphere_orders",
-        JSON.stringify([...existingOrders, order])
-      );
-
-      setCart([]);
-      setShowCart(false);
-
-      alert(`Order placed successfully! Order ID: ${order.orderId}`);
-    }
+ 
+async function checkout() {
+  if (!user) {
+    setShowCart(false);
+    setShowAuth(true);
+    alert("Please login before placing your order.");
+    return;
   }
+
+  if (cart.length === 0) return;
+
+  const total = cart.reduce(
+    (sum, item) => sum + item.price * item.quantity,
+    0
+  );
+
+  const confirmed = window.confirm(
+    `Confirm your order of ₹${total.toLocaleString("en-IN")}?`
+  );
+
+  if (!confirmed) return;
+
+  try {
+    const token = localStorage.getItem("shopsphere_token");
+
+    const response = await fetch("http://localhost:5000/api/orders", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        items: cart.map(item => ({
+          id: item.id,
+          quantity: item.quantity,
+        })),
+      }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || "Order failed");
+    }
+
+    setCart([]);
+    setShowCart(false);
+
+    alert(`Order placed successfully! Order ID: ${data.order._id}`);
+  } catch (error) {
+    console.error("Checkout error:", error);
+    alert(error.message);
+  }
+}
 
  function handleLogin(authData) {
   setUser(authData.user);
@@ -151,7 +186,14 @@ function App() {
         }}
         user={user}
       />
-
+{selectedProduct ? (
+  <ProductDetails
+    product={selectedProduct}
+    onBack={() => setSelectedProduct(null)}
+    onAdd={addToCart}
+  />
+) : (
+  <>
       <main>
         <section className="hero">
           <div>
@@ -188,7 +230,9 @@ function App() {
               <h2>Explore Products</h2>
             </div>
 
-            <span>{filteredProducts.length} products</span>
+           <span>
+  {loading ? "Loading..." : `${filteredProducts.length} products`}
+</span>
           </div>
 
           <div className="filters">
@@ -211,20 +255,26 @@ function App() {
             </select>
           </div>
 
-          <div className="product-grid">
-            {filteredProducts.map(product => (
-              <ProductCard
-                key={product.id}
-                product={product}
-                onView={setSelectedProduct}
-                onAdd={addToCart}
-              />
-            ))}
-          </div>
+         <div className="product-grid">
+  {loading ? (
+    <p>Loading products...</p>
+  ) : productError ? (
+    <p className="empty-cart">{productError}</p>
+  ) : (
+    filteredProducts.map(product => (
+      <ProductCard
+        key={product.id}
+        product={product}
+        onView={setSelectedProduct}
+        onAdd={addToCart}
+      />
+    ))
+  )}
+</div>
 
-          {filteredProducts.length === 0 && (
-            <p className="empty-cart">No products found.</p>
-          )}
+         {!loading && !productError && filteredProducts.length === 0 && (
+  <p className="empty-cart">No products found.</p>
+)}
         </section>
       </main>
 
@@ -236,14 +286,9 @@ function App() {
         <p>© 2026 ShopSphere. All rights reserved.</p>
       </footer>
 
-      {selectedProduct && (
-        <ProductDetails
-          product={selectedProduct}
-          onClose={() => setSelectedProduct(null)}
-          onAdd={addToCart}
-        />
-      )}
-
+   
+  </>
+)}
       {showCart && (
         <Cart
           cart={cart}

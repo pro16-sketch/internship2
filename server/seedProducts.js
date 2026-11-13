@@ -11,6 +11,7 @@ const products = [
     id: 1, name: "Wireless Headphones",
     category: "Electronics", price: 2499, oldPrice: 3499,
     rating: 4.8,
+    stock: 10,
     image: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=600",
     description: "Premium wireless headphones with immersive sound, comfortable ear cushions and long battery life."
   },
@@ -18,6 +19,7 @@ const products = [
     id: 2, name: "Smart Watch",
     category: "Electronics", price: 3999, oldPrice: 4999,
     rating: 4.6,
+    stock: 10,
     image: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=600",
     description: "A stylish smartwatch featuring fitness tracking, notifications and everyday health monitoring."
   },
@@ -25,6 +27,7 @@ const products = [
     id: 3, name: "Running Shoes",
     category: "Fashion", price: 1999, oldPrice: 2999,
     rating: 4.5,
+    stock: 10,
     image: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=600",
     description: "Lightweight running shoes designed for comfort and everyday performance."
   },
@@ -32,6 +35,7 @@ const products = [
     id: 4, name: "Classic Backpack",
     category: "Accessories", price: 1499, oldPrice: 1999,
     rating: 4.4,
+    stock: 10,
     image: "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=600",
     description: "A spacious everyday backpack with multiple compartments and a durable design."
   },
@@ -39,6 +43,7 @@ const products = [
     id: 5, name: "Camera",
     category: "Electronics", price: 24999, oldPrice: 29999,
     rating: 4.9,
+    stock: 10,
     image: "https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=600",
     description: "Capture memorable moments with this versatile digital camera."
   },
@@ -46,6 +51,7 @@ const products = [
     id: 6, name: "Sunglasses",
     category: "Fashion", price: 999, oldPrice: 1499,
     rating: 4.3,
+    stock: 10,
     image: "https://images.unsplash.com/photo-1511499767150-a48a237f0083?w=600",
     description: "Modern sunglasses with a lightweight frame and timeless styling."
   },
@@ -53,6 +59,7 @@ const products = [
     id: 7, name: "Mechanical Keyboard",
     category: "Electronics", price: 3299, oldPrice: 4299,
     rating: 4.7,
+    stock: 10,
     image: "https://images.unsplash.com/photo-1587829741301-dc798b83add3?w=600",
     description: "A responsive mechanical keyboard designed for productivity and gaming."
   },
@@ -60,6 +67,7 @@ const products = [
     id: 8, name: "Travel Bottle",
     category: "Accessories", price: 699, oldPrice: 999,
     rating: 4.2,
+    stock: 10,
     image: "https://images.unsplash.com/photo-1602143407151-7111542de6e8?w=600",
     description: "A reusable travel bottle for convenient hydration on the go."
   }
